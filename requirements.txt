@@ -1,7 +1,4 @@
-streamlit>=1.42,<2
-requests>=2.32,<3
-python-dotenv>=1.0,<2
-sarvamai>=0.1.37,<1
-
-fastapi>=0.110,<1
-uvicorn>=0.29,<1
+# Streamlit app (local + Streamlit Community Cloud)
+streamlit==1.65.0
+requests==2.34.2
+python-dotenv==1.2.4

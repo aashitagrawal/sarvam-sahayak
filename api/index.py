@@ -1,19 +1,25 @@
 """REST API for the Gen Z translator and Bulbul audio.
 
-Run with:  uvicorn api:app --reload --port 8000
+Deployed on Vercel as a Python serverless function (see vercel.json).
+Run locally with:  uvicorn api.index:app --reload --port 8000
 """
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
 from urllib.parse import quote
+
+# Make the project root importable when Vercel loads this file as a standalone function.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
-from services.genz_translator import MAX_GENZ_CHARS, translate_genz
-from services.sarvam_service import DEFAULT_SPEAKER, SarvamError, SarvamInputError, generate_bulbul_audio
-from utils.config import get_api_key
+from services.genz_translator import MAX_GENZ_CHARS, translate_genz  # noqa: E402
+from services.sarvam_service import DEFAULT_SPEAKER, SarvamError, SarvamInputError, generate_bulbul_audio  # noqa: E402
+from utils.config import get_api_key  # noqa: E402
 
 app = FastAPI(title="Sarvam Sahayak API")
 

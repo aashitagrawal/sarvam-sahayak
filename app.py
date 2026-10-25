@@ -12,7 +12,7 @@ from services.sarvam_service import (BULBUL_LANGUAGES, BULBUL_SPEAKERS, DEFAULT_
                                      generate_bulbul_audio, synthesize, transcribe)
 from services.ticket_generator import generate_ticket
 from utils.config import get_api_key
-from utils.styles import GENZ_CSS, genz_card
+from utils.styles import BASE_CSS, GENZ_CSS, TICKET_CSS, genz_card, step_header, ticket_preview
 
 st.set_page_config(page_title="Sarvam Sahayak", page_icon="🎙️", layout="centered")
 
@@ -25,74 +25,89 @@ TICKET_LANGUAGES = {
 
 
 def render_ticket_tab(key: str) -> None:
-    """Speech -> transcript -> editable support ticket -> spoken readback."""
-    st.caption("Speak naturally. Get a clear support request you can review and share.")
-    language_name = st.selectbox("Spoken language", list(TICKET_LANGUAGES), index=0)
-    selected_language = TICKET_LANGUAGES[language_name]
-    st.info("For best results, use a recording shorter than 30 seconds. Hindi, Marathi, and Hinglish are supported.")
+    """Speech -> transcript -> editable support ticket -> spoken readback, as three step cards."""
+    st.markdown(TICKET_CSS, unsafe_allow_html=True)
 
-    recording = st.audio_input("Record your request")
-    upload = st.file_uploader("Or upload audio", type=["wav", "mp3", "m4a", "ogg", "webm", "flac"])
-    audio_file = recording if recording is not None else upload
+    with st.container(key="tstep1"):
+        st.markdown(step_header(1, "Tell us what happened", "Record or upload a clip under 30 seconds, or just type below."),
+                    unsafe_allow_html=True)
+        language_name = st.selectbox("🌐 Spoken language", list(TICKET_LANGUAGES), index=0)
+        selected_language = TICKET_LANGUAGES[language_name]
+        rec_col, up_col = st.columns(2)
+        recording = rec_col.audio_input("🎙️ Record")
+        upload = up_col.file_uploader("📁 Or upload", type=["wav", "mp3", "m4a", "ogg", "webm", "flac"])
+        audio_file = recording if recording is not None else upload
 
-    if audio_file is not None:
-        st.audio(audio_file)
-        if recording is not None and upload is not None:
-            st.caption("Using the recording above. Remove it to use the uploaded file.")
-        if st.button("Transcribe audio", disabled=not key, type="primary"):
+        if audio_file is not None:
+            st.audio(audio_file)
+            if recording is not None and upload is not None:
+                st.caption("Using the recording. Remove it to use the uploaded file.")
+            if st.button("📝 Transcribe audio", disabled=not key, type="primary"):
+                try:
+                    with st.spinner("Transcribing with Saaras…"):
+                        transcript, detected = transcribe(
+                            audio_file.getvalue(), audio_file.name,
+                            audio_file.type or "application/octet-stream", selected_language, key
+                        )
+                    st.session_state.transcript = transcript
+                    st.session_state.detected_language = detected
+                    st.session_state.pop("ticket", None)
+                    st.session_state.pop("playback", None)
+                    st.toast("Transcript ready ✅")
+                except SarvamError as exc:
+                    st.error(str(exc))
+
+    with st.container(key="tstep2"):
+        st.markdown(step_header(2, "Check your words", "Fix anything the transcript got wrong, then create the ticket."),
+                    unsafe_allow_html=True)
+        transcript = st.text_area(
+            "Your words", key="transcript", height=120, label_visibility="collapsed",
+            placeholder="Type your request here in Hindi, Marathi, English, or Hinglish…",
+        )
+        if st.button("✨ Create support ticket", type="primary", disabled=not key or not transcript.strip()):
             try:
-                with st.spinner("Transcribing with Saaras…"):
-                    transcript, detected = transcribe(
-                        audio_file.getvalue(), audio_file.name,
-                        audio_file.type or "application/octet-stream", selected_language, key
-                    )
-                st.session_state.transcript = transcript
-                st.session_state.detected_language = detected
-                st.session_state.pop("ticket", None)
+                with st.spinner("Preparing your support ticket…"):
+                    detected = st.session_state.get("detected_language", selected_language)
+                    st.session_state.ticket = generate_ticket(transcript, detected, key)
                 st.session_state.pop("playback", None)
+                st.toast("Ticket created 🎫")
             except SarvamError as exc:
                 st.error(str(exc))
 
-    transcript = st.text_area(
-        "Your words (edit before generating)", key="transcript", height=120,
-        placeholder="Or type your request here in Hindi, Marathi, English, or Hinglish…",
-    )
-    if st.button("Create support ticket", disabled=not key or not transcript.strip()):
-        try:
-            with st.spinner("Preparing your support ticket…"):
-                detected = st.session_state.get("detected_language", selected_language)
-                st.session_state.ticket = generate_ticket(transcript, detected, key)
-            st.session_state.pop("playback", None)
-        except SarvamError as exc:
-            st.error(str(exc))
-
     if "ticket" not in st.session_state:
         return
-    st.subheader("Review your ticket")
-    ticket = st.session_state.ticket
-    subject = st.text_input("Subject", value=ticket["subject"])
-    category = st.text_input("Category", value=ticket["category"])
-    description = st.text_area("Description", value=ticket["description"], height=160)
-    resolution = st.text_area("Requested resolution", value=ticket["requested_resolution"], height=100)
-    readback = st.text_area("Readback in your language", value=ticket["readback"], height=100)
-    content = (f"Subject: {subject}\nCategory: {category}\n\n"
-               f"Description:\n{description}\n\nRequested resolution:\n{resolution}\n")
-    st.download_button("Download ticket (.txt)", data=content.encode("utf-8"),
-                       file_name="sarvam-sahayak-ticket.txt", mime="text/plain")
+    with st.container(key="tstep3"):
+        st.markdown(step_header(3, "Review & share", "Edit any field, download it, or hear it read back."),
+                    unsafe_allow_html=True)
+        ticket = st.session_state.ticket
+        detected = st.session_state.get("detected_language", selected_language)
+        language_label = BULBUL_LANGUAGES.get(detected, "Auto")
+        st.markdown(ticket_preview(ticket["subject"], ticket["category"], language_label), unsafe_allow_html=True)
 
-    if st.button("Read it aloud", disabled=not key):
-        try:
-            detected = st.session_state.get("detected_language", selected_language)
-            if detected not in BULBUL_LANGUAGES:
-                detected = "hi-IN" if selected_language == "unknown" else selected_language
-            with st.spinner("Creating speech with Bulbul…"):
-                st.session_state.playback = synthesize(readback, detected, key)
-        except SarvamError as exc:
-            st.error(str(exc))
-    if "playback" in st.session_state:
-        st.audio(st.session_state.playback, format="audio/wav")
-        st.download_button("Download readback (.wav)", data=st.session_state.playback,
-                           file_name="sarvam-sahayak-readback.wav", mime="audio/wav")
+        subj_col, cat_col = st.columns([2, 1])
+        subject = subj_col.text_input("Subject", value=ticket["subject"])
+        category = cat_col.text_input("Category", value=ticket["category"])
+        description = st.text_area("Description", value=ticket["description"], height=150)
+        resolution = st.text_area("Requested resolution", value=ticket["requested_resolution"], height=90)
+        readback = st.text_area("🗣️ Readback in your language", value=ticket["readback"], height=90)
+        content = (f"Subject: {subject}\nCategory: {category}\n\n"
+                   f"Description:\n{description}\n\nRequested resolution:\n{resolution}\n")
+
+        dl_col, speak_col = st.columns(2)
+        dl_col.download_button("⬇️ Download ticket (.txt)", data=content.encode("utf-8"),
+                               file_name="sarvam-sahayak-ticket.txt", mime="text/plain", use_container_width=True)
+        if speak_col.button("🔊 Read it aloud", disabled=not key, use_container_width=True):
+            try:
+                if detected not in BULBUL_LANGUAGES:
+                    detected = "hi-IN" if selected_language == "unknown" else selected_language
+                with st.spinner("Creating speech with Bulbul…"):
+                    st.session_state.playback = synthesize(readback, detected, key)
+            except SarvamError as exc:
+                st.error(str(exc))
+        if "playback" in st.session_state:
+            st.audio(st.session_state.playback, format="audio/wav")
+            st.download_button("⬇️ Download readback (.wav)", data=st.session_state.playback,
+                               file_name="sarvam-sahayak-readback.wav", mime="audio/wav")
 
 
 def render_genz_tab(key: str) -> None:
@@ -151,7 +166,10 @@ def render_genz_tab(key: str) -> None:
 
 
 def main() -> None:
-    st.title("🎙️ Sarvam Sahayak")
+    st.markdown(BASE_CSS, unsafe_allow_html=True)
+    st.markdown('<div class="app-hero"><h1>🎙️ Sarvam Sahayak</h1>'
+                '<p>Speak naturally. Get a clear support request, or vibe-check your text. ✨</p></div>',
+                unsafe_allow_html=True)
     key = get_api_key()
     if not key:
         st.warning("Add SARVAM_API_KEY to a local .env file or Streamlit secrets to enable Sarvam APIs.")

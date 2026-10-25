@@ -111,9 +111,9 @@ class ApiTests(unittest.TestCase):
             from fastapi.testclient import TestClient
         except ImportError:
             self.skipTest("fastapi not installed")
-        import api
-        self.client = TestClient(api.app)
-        patcher = patch("api.get_api_key", return_value="k")
+        from api.index import app
+        self.client = TestClient(app)
+        patcher = patch("api.index.get_api_key", return_value="k")
         patcher.start()
         self.addCleanup(patcher.stop)
 

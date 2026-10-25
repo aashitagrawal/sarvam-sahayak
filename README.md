@@ -10,7 +10,7 @@ Requires Python 3.10+ and a [Sarvam API key](https://dashboard.sarvam.ai/).
 cd sarvam-sahayak
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
+python -m pip install -r requirements-dev.txt
 Copy-Item .env.example .env
 ```
 
@@ -35,10 +35,10 @@ The ticket is generated in English for support teams. The readback follows the s
 
 Open the **💅 Gen Z Translator** tab. Rewrite text in Gen Z slang, optionally translate it into one of 11 Indian languages, and play or download the Bulbul audio.
 
-The same features are available as a REST API (`api.py`):
+The same features are available as a REST API (`api/index.py`):
 
 ```powershell
-uvicorn api:app --reload --port 8000
+uvicorn api.index:app --reload --port 8000
 ```
 
 - `POST /api/translate/genz` `{"text": "..."}` → `{"translation": "..."}`
@@ -50,7 +50,7 @@ Errors: `400` for invalid input, `502` when Sarvam fails, `503` if `SARVAM_API_K
 ## Project layout
 
 - `app.py`: Streamlit UI (ticket tab + Gen Z tab)
-- `api.py`: FastAPI REST endpoints
+- `api/index.py`: FastAPI REST endpoints (Vercel function)
 - `services/sarvam_service.py`: Sarvam API wrapper (Saaras, chat, Bulbul)
 - `services/genz_translator.py`, `services/ticket_generator.py`: LLM prompts and parsing
 - `utils/config.py`: loads `SARVAM_API_KEY` via python-dotenv; `utils/styles.py`: Gen Z neon CSS
@@ -63,10 +63,25 @@ Errors: `400` for invalid input, `502` when Sarvam fails, `503` if `SARVAM_API_K
 
 Audio upload is limited to 10 MB. Sarvam's synchronous transcription endpoint is intended for audio shorter than 30 seconds. Requests may incur Sarvam usage charges. The app makes calls only when you click an action button. See [ARCHITECTURE.md](ARCHITECTURE.md) for flow and data handling.
 
+## Deploy
+
+Streamlit needs a long-running server with WebSockets, which Vercel's serverless functions do not provide, so the project deploys in two parts:
+
+**REST API → Vercel**
+1. Import the GitHub repo in Vercel (no framework preset, root directory = repo root).
+2. Add `SARVAM_API_KEY` under *Settings → Environment Variables*.
+3. Deploy. `vercel.json` routes every path to `api/index.py`, which installs `api/requirements.txt`. Check `https://<project>.vercel.app/api/health` and `/docs`.
+
+**Streamlit UI → Streamlit Community Cloud**
+1. At [share.streamlit.io](https://share.streamlit.io), create an app from this repo with main file `app.py` (it installs the root `requirements.txt`).
+2. Under *Advanced settings → Secrets*, add `SARVAM_API_KEY = "..."`.
+
+Both read the key from the environment (`os.environ` via `utils/config.py`), falling back to Streamlit secrets. Never commit `.env`.
+
 ## Verify
 
 ```powershell
-python -m py_compile app.py api.py services/*.py utils/*.py
+python -m py_compile app.py api/index.py services/*.py utils/*.py
 python -m unittest discover -s tests -v
 ```
 

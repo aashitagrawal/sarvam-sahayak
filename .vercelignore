@@ -1,0 +1,8 @@
+.venv/
+.venv310/
+venv/
+tests/
+__pycache__/
+.env
+.streamlit/
+app.py

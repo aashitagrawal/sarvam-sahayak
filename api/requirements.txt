@@ -1,0 +1,5 @@
+# REST API (Vercel serverless function). Vercel uses the requirements.txt closest to the function.
+fastapi==0.162.0
+pydantic==2.13.4
+requests==2.34.2
+python-dotenv==1.2.4

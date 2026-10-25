@@ -71,6 +71,112 @@ GENZ_CSS = """
 """
 
 
+BASE_CSS = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;800&display=swap');
+
+html, body, .stApp, .stApp * { font-family: 'Outfit', sans-serif; }
+.stApp {
+  background: radial-gradient(circle at 15% -10%, #23164a 0%, transparent 40%),
+              radial-gradient(circle at 110% 20%, #0c2c3d 0%, transparent 35%), #0b0b14;
+}
+[data-testid="stHeader"] { background: transparent; }
+/* Keep Streamlit's icon font: the Outfit override would otherwise print icon names as text. */
+.stApp [data-testid="stIconMaterial"], .stApp .material-symbols-rounded { font-family: 'Material Symbols Rounded' !important; }
+.app-hero { text-align: center; margin: 4px 0 14px; }
+.app-hero h1 {
+  font-size: 2.6rem; font-weight: 800; margin: 0;
+  background: linear-gradient(90deg, #a78bfa, #60a5fa, #34d399);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.app-hero p { color: #9d97c2; margin: 4px 0 0; }
+
+.stTabs [role="tablist"] {
+  gap: 6px; background: #13131f; padding: 6px; border-radius: 999px;
+  border: 1px solid #262640; width: fit-content; margin: 0 auto 18px;
+}
+.stTabs [role="tab"] { border-radius: 999px; padding: 8px 22px; color: #a7a3c7; background: transparent; }
+.stTabs [role="tab"]:hover { color: #fff; }
+.stTabs [role="tab"][aria-selected="true"] { background: linear-gradient(90deg, #6d4aff, #3b82f6); color: #fff !important; }
+.stTabs [data-baseweb="tab-highlight"], .stTabs [data-baseweb="tab-border"] { display: none; }
+</style>
+"""
+
+TICKET_CSS = """
+<style>
+[class*="st-key-tstep"] {
+  background: linear-gradient(180deg, rgba(30, 28, 52, .85), rgba(19, 19, 31, .85));
+  border: 1px solid #2a2847; border-radius: 20px; padding: 22px 22px 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  transition: border-color .2s ease;
+}
+[class*="st-key-tstep"]:hover { border-color: #4c3fa0; }
+.tstep-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.tstep-num {
+  width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+  font-weight: 800; color: #fff; background: linear-gradient(135deg, #7c5cff, #3b82f6);
+  box-shadow: 0 0 14px rgba(124, 92, 255, .55);
+}
+.tstep-title { font-size: 1.2rem; font-weight: 600; color: #f1efff; }
+.tstep-sub { color: #8f8ab3; font-size: .92rem; margin: 0 0 10px 46px; }
+
+[class*="st-key-tstep"] textarea, [class*="st-key-tstep"] input {
+  background: #10101b !important; border-radius: 12px !important; color: #f1efff !important;
+}
+[class*="st-key-tstep"] [data-baseweb="input"], [class*="st-key-tstep"] [data-baseweb="textarea"],
+[class*="st-key-tstep"] [data-baseweb="select"] > div {
+  background: #10101b; border: 1px solid #2f2c52; border-radius: 12px;
+}
+[class*="st-key-tstep"] [data-baseweb="input"]:focus-within,
+[class*="st-key-tstep"] [data-baseweb="textarea"]:focus-within { border-color: #7c5cff; box-shadow: 0 0 0 3px rgba(124, 92, 255, .2); }
+[class*="st-key-tstep"] [data-testid="stFileUploaderDropzone"] { background: #10101b; border: 1.5px dashed #3a3566; border-radius: 14px; }
+
+[class*="st-key-tstep"] .stButton button, [class*="st-key-tstep"] .stDownloadButton button {
+  border-radius: 12px; font-weight: 600; padding: .55rem 1.2rem;
+  border: 1px solid #3a3566; background: #1b1a2e; color: #e8e5ff;
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+}
+[class*="st-key-tstep"] .stButton button:hover, [class*="st-key-tstep"] .stDownloadButton button:hover {
+  transform: translateY(-1px); border-color: #7c5cff; color: #fff; box-shadow: 0 6px 18px rgba(124, 92, 255, .3);
+}
+[class*="st-key-tstep"] .stButton button[kind="primary"] {
+  background: linear-gradient(90deg, #7c5cff, #3b82f6); border: none; color: #fff;
+}
+[class*="st-key-tstep"] .stButton button:disabled { opacity: .45; transform: none; box-shadow: none; }
+
+.ticket-preview {
+  border-radius: 16px; padding: 16px 18px; margin: 4px 0 14px;
+  background: linear-gradient(135deg, rgba(124, 92, 255, .14), rgba(59, 130, 246, .08));
+  border: 1px solid rgba(124, 92, 255, .4);
+}
+.ticket-preview .meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.ticket-preview .id { color: #8f8ab3; font-size: .8rem; letter-spacing: 1px; }
+.ticket-preview .chip {
+  font-size: .78rem; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+  background: rgba(52, 211, 153, .15); color: #6ee7b7; border: 1px solid rgba(52, 211, 153, .35);
+}
+.ticket-preview .chip.lang { background: rgba(96, 165, 250, .15); color: #93c5fd; border-color: rgba(96, 165, 250, .35); }
+.ticket-preview .subject { font-size: 1.25rem; font-weight: 600; color: #fff; margin-top: 8px; }
+.st-key-tstep3 audio { width: 100%; border-radius: 999px; }
+</style>
+"""
+
+
+def ticket_preview(subject: str, category: str, language: str) -> str:
+    """Return HTML for the ticket summary header. All values are escaped."""
+    return ('<div class="ticket-preview"><div class="meta"><span class="id">🎫 SUPPORT TICKET</span>'
+            f'<span class="chip">{html.escape(category)}</span>'
+            f'<span class="chip lang">🌐 {html.escape(language)}</span></div>'
+            f'<div class="subject">{html.escape(subject)}</div></div>')
+
+
+def step_header(num: int, title: str, subtitle: str) -> str:
+    """Return HTML for a numbered step header."""
+    return (f'<div class="tstep-head"><div class="tstep-num">{num}</div>'
+            f'<div class="tstep-title">{html.escape(title)}</div></div>'
+            f'<p class="tstep-sub">{html.escape(subtitle)}</p>')
+
+
 def genz_card(text: str, tag: str = "✨ GEN Z TRANSLATION") -> str:
     """Return HTML for the neon output card. ``text`` is escaped, so model output cannot inject markup."""
     return (f'<div class="genz-card"><div class="tag">{html.escape(tag)}</div>'
