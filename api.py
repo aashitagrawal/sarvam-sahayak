@@ -7,16 +7,14 @@ from __future__ import annotations
 
 from urllib.parse import quote
 
-from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
-from sarvam_client import SarvamError
-from sarvam_service import (DEFAULT_SPEAKER, MAX_GENZ_CHARS, SarvamInputError, generate_bulbul_audio,
-                            get_api_key, translate_genz)
+from services.genz_translator import MAX_GENZ_CHARS, translate_genz
+from services.sarvam_service import DEFAULT_SPEAKER, SarvamError, SarvamInputError, generate_bulbul_audio
+from utils.config import get_api_key
 
-load_dotenv()
 app = FastAPI(title="Sarvam Sahayak API")
 
 
@@ -32,6 +30,7 @@ class BulbulRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=4000)
     language_code: str = Field("hi-IN", examples=["hi-IN", "bn-IN", "ta-IN"])
     speaker: str = DEFAULT_SPEAKER
+    pace: float = Field(1.0, ge=0.5, le=2.0)
     translate: bool = Field(False, description="Translate text into language_code before speaking.")
 
 
@@ -61,7 +60,7 @@ def genz(req: GenZRequest) -> GenZResponse:
           responses={200: {"content": {"audio/wav": {}}}})
 def bulbul(req: BulbulRequest) -> Response:
     audio, spoken = _run(generate_bulbul_audio, req.text, req.language_code, _key(),
-                         speaker=req.speaker, translate=req.translate)
+                         speaker=req.speaker, pace=req.pace, translate=req.translate)
     # Spoken text goes in a header (URL-encoded) so clients can show what was read.
     return Response(audio, media_type="audio/wav",
                     headers={"Content-Disposition": 'inline; filename="bulbul.wav"',

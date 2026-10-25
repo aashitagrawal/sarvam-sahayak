@@ -33,7 +33,7 @@ The ticket is generated in English for support teams. The readback follows the s
 
 ## Gen Z Translator + Bulbul audio
 
-Open the **Gen Z Translator** page in the Streamlit sidebar. Rewrite text in Gen Z slang, optionally translate it into one of 11 Indian languages, and play or download the Bulbul audio.
+Open the **💅 Gen Z Translator** tab. Rewrite text in Gen Z slang, optionally translate it into one of 11 Indian languages, and play or download the Bulbul audio.
 
 The same features are available as a REST API (`api.py`):
 
@@ -42,10 +42,18 @@ uvicorn api:app --reload --port 8000
 ```
 
 - `POST /api/translate/genz` `{"text": "..."}` → `{"translation": "..."}`
-- `POST /api/audio/bulbul` `{"text": "...", "language_code": "hi-IN", "speaker": "shubh", "translate": false}` → `audio/wav` (spoken text in the `X-Spoken-Text` header, URL-encoded)
+- `POST /api/audio/bulbul` `{"text": "...", "language_code": "hi-IN", "speaker": "shubh", "pace": 1.0, "translate": false}` → `audio/wav` (spoken text in the `X-Spoken-Text` header, URL-encoded)
 - `GET /api/health`
 
 Errors: `400` for invalid input, `502` when Sarvam fails, `503` if `SARVAM_API_KEY` is missing. Interactive docs are at `http://localhost:8000/docs`.
+
+## Project layout
+
+- `app.py`: Streamlit UI (ticket tab + Gen Z tab)
+- `api.py`: FastAPI REST endpoints
+- `services/sarvam_service.py`: Sarvam API wrapper (Saaras, chat, Bulbul)
+- `services/genz_translator.py`, `services/ticket_generator.py`: LLM prompts and parsing
+- `utils/config.py`: loads `SARVAM_API_KEY` via python-dotenv; `utils/styles.py`: Gen Z neon CSS
 
 ## API and limits
 
@@ -58,7 +66,7 @@ Audio upload is limited to 10 MB. Sarvam's synchronous transcription endpoint is
 ## Verify
 
 ```powershell
-python -m py_compile app.py sarvam_client.py
+python -m py_compile app.py api.py services/*.py utils/*.py
 python -m unittest discover -s tests -v
 ```
 

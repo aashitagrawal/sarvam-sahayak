@@ -8,7 +8,7 @@ Browser (Streamlit)
   └─ .txt and .wav downloads
           │ explicit button clicks
           ▼
-Python app + sarvam_client.py
+Python app + services/
   ├─ Saaras v4: audio → transcript
   ├─ Sarvam-105B: transcript → structured ticket + local-language readback
   └─ Bulbul v3: readback → WAV audio
@@ -17,7 +17,7 @@ Python app + sarvam_client.py
 ## Processing
 
 1. Streamlit receives audio in memory. The user can choose auto-detection, Hindi, Marathi, or English.
-2. `sarvam_client.transcribe` sends multipart audio to Saaras. The transcript is displayed for correction.
+2. `services.sarvam_service.transcribe` sends multipart audio to Saaras. The transcript is displayed for correction.
 3. `generate_ticket` sends the corrected transcript to Sarvam Chat Completions with instructions to preserve facts and return five fields: subject, category, description, requested resolution, and readback. It validates that all fields exist and are nonempty.
 4. The user edits the ticket. The app builds the downloadable text from the current edits.
 5. `synthesize` sends the editable readback to Bulbul, decodes the returned base64 WAV, and exposes browser playback and a download.
