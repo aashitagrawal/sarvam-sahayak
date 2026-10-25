@@ -1,4 +1,4 @@
-# Sarvam Sahayak
+# Sarvam Sahayak 
 
 Turn a spoken service concern into a clear, editable support ticket. Speak or upload Hindi, Marathi, or Hinglish audio; Saaras transcribes it, Sarvam's chat model writes a concise English ticket and a familiar-language readback, and Bulbul speaks the readback.
 
