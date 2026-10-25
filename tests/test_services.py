@@ -113,7 +113,7 @@ class ApiTests(unittest.TestCase):
             self.skipTest("fastapi not installed")
         from api.index import app
         self.client = TestClient(app)
-        patcher = patch("api.index.get_api_key", return_value="k")
+        patcher = patch("_app.get_api_key", return_value="k")
         patcher.start()
         self.addCleanup(patcher.stop)
 
