@@ -31,6 +31,22 @@ You may also set `SARVAM_API_KEY` as an environment variable or in local Streaml
 
 The ticket is generated in English for support teams. The readback follows the spoken language where possible. No ticket is sent to a service provider automatically.
 
+## Gen Z Translator + Bulbul audio
+
+Open the **Gen Z Translator** page in the Streamlit sidebar. Rewrite text in Gen Z slang, optionally translate it into one of 11 Indian languages, and play or download the Bulbul audio.
+
+The same features are available as a REST API (`api.py`):
+
+```powershell
+uvicorn api:app --reload --port 8000
+```
+
+- `POST /api/translate/genz` `{"text": "..."}` → `{"translation": "..."}`
+- `POST /api/audio/bulbul` `{"text": "...", "language_code": "hi-IN", "speaker": "shubh", "translate": false}` → `audio/wav` (spoken text in the `X-Spoken-Text` header, URL-encoded)
+- `GET /api/health`
+
+Errors: `400` for invalid input, `502` when Sarvam fails, `503` if `SARVAM_API_KEY` is missing. Interactive docs are at `http://localhost:8000/docs`.
+
 ## API and limits
 
 - `POST /speech-to-text` with `saaras:v4`; auto-detect uses `codemix` mode for Hinglish.

@@ -115,17 +115,20 @@ def generate_ticket(transcript: str, language_code: str, api_key: str) -> dict[s
         raise SarvamError("Ticket generation returned an incomplete result. Please retry.") from exc
 
 
-def synthesize(text: str, language_code: str, api_key: str) -> bytes:
+TTS_LANGUAGES = {"hi-IN", "bn-IN", "ta-IN", "te-IN", "kn-IN", "ml-IN", "mr-IN", "gu-IN", "pa-IN", "od-IN", "en-IN"}
+
+
+def synthesize(text: str, language_code: str, api_key: str, speaker: str = "shubh") -> bytes:
     if not text.strip():
         raise SarvamError("There is no text to read aloud.")
     if len(text) > 2500:
         raise SarvamError("Readback is too long for Bulbul. Shorten it to 2,500 characters.")
-    if language_code not in {"hi-IN", "mr-IN", "en-IN"}:
+    if language_code not in TTS_LANGUAGES:
         language_code = "hi-IN"
     body = _post(
         "/text-to-speech", api_key,
         payload={"model": "bulbul:v3", "text": text, "language_code": language_code,
-                 "speaker": "shubh", "output_audio_codec": "wav"},
+                 "speaker": speaker, "output_audio_codec": "wav"},
         timeout=75,
     )
     try:
