@@ -1,11 +1,17 @@
 """Sarvam Sahayak: speech-to-ticket and a Gen Z translator with Bulbul audio.
 
-Run with:  streamlit run app.py
+Run with:  streamlit run ui/app.py
 """
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
 import streamlit as st
+
+# Make the project root (services/, utils/) importable; Streamlit only adds this file's folder to sys.path.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from services.genz_translator import MAX_GENZ_CHARS, translate_genz
 from services.sarvam_service import (BULBUL_LANGUAGES, BULBUL_SPEAKERS, DEFAULT_SPEAKER, SarvamError,

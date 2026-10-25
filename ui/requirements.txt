@@ -1,0 +1,4 @@
+# Streamlit UI (local + Streamlit Community Cloud, which reads this file next to ui/app.py)
+streamlit==1.65.0
+requests==2.34.2
+python-dotenv==1.2.4

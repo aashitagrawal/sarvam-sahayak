@@ -1,4 +1,8 @@
-"""FastAPI app for the Gen Z translator and Bulbul audio. Loaded by api/index.py."""
+"""REST API for the Gen Z translator and Bulbul audio.
+
+Deployed on Vercel (FastAPI preset auto-detects this file). Run locally with:
+    uvicorn index:app --reload --port 8000
+"""
 
 from __future__ import annotations
 
